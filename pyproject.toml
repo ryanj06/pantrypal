@@ -1,0 +1,16 @@
+[project]
+name = "pantrypal"
+version = "0.1.0"
+description = "A CLI pantry tracker and meal planner that suggests recipes based on what you have."
+requires-python = ">=3.12"
+dependencies = []
+
+[project.scripts]
+pantry = "pantrypal.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pantrypal"]
