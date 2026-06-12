@@ -7,7 +7,7 @@ import sys
 from typing import List, Optional
 
 from pantrypal.matching import shopping_list, suggest_recipes
-from pantrypal.recipes import load_recipes, save_recipes
+from pantrypal.recipes import load_recipes, recipe_has_tag, save_recipes
 from pantrypal.storage import load_pantry, normalize_name, save_pantry
 
 
@@ -53,6 +53,13 @@ def cmd_pantry_list(args: argparse.Namespace) -> int:
 def cmd_meal_suggest(args: argparse.Namespace) -> int:
     pantry = load_pantry()
     recipes = load_recipes()
+
+    if args.tag:
+        recipes = [r for r in recipes if recipe_has_tag(r, args.tag)]
+        if not recipes:
+            print(f"No recipes tagged '{args.tag}'.")
+            return 0
+
     matches = suggest_recipes(recipes, pantry, limit=args.limit)
 
     if not matches:
@@ -129,9 +136,26 @@ def cmd_recipe_add(args: argparse.Namespace) -> int:
         ingredients[name] = qty
 
     recipes = load_recipes()
-    recipes.append({"name": args.name, "ingredients": ingredients})
+    recipes.append({
+        "name": args.name,
+        "ingredients": ingredients,
+        "tags": args.tags or [],
+    })
     save_recipes(recipes)
     print(f"Added recipe '{args.name}' with {len(ingredients)} ingredients.")
+    return 0
+
+
+def cmd_recipe_remove(args: argparse.Namespace) -> int:
+    recipes = load_recipes()
+    matching = [r for r in recipes if str(r["name"]).lower() == args.name.lower()]
+    if not matching:
+        print(f"No recipe named '{args.name}' found.")
+        return 1
+
+    recipes = [r for r in recipes if str(r["name"]).lower() != args.name.lower()]
+    save_recipes(recipes)
+    print(f"Removed recipe '{matching[0]['name']}'.")
     return 0
 
 
@@ -169,6 +193,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_suggest.add_argument(
         "--limit", type=int, default=5, help="Max number of recipes to show (default: 5)"
     )
+    p_suggest.add_argument(
+        "--tag", help="Only suggest recipes with this tag (e.g. vegetarian, quick, vegan)"
+    )
     p_suggest.set_defaults(func=cmd_meal_suggest)
 
     p_shopping = subparsers.add_parser(
@@ -196,7 +223,14 @@ def build_parser() -> argparse.ArgumentParser:
         nargs="+",
         help="Alternating ingredient name and quantity pairs, e.g. eggs 2 milk 1",
     )
+    p_recipe_add.add_argument(
+        "--tags", nargs="*", help="Optional tags, e.g. --tags vegetarian quick"
+    )
     p_recipe_add.set_defaults(func=cmd_recipe_add)
+
+    p_recipe_remove = subparsers.add_parser("remove-recipe", help="Remove a recipe by name")
+    p_recipe_remove.add_argument("name", help="Recipe name to remove")
+    p_recipe_remove.set_defaults(func=cmd_recipe_remove)
 
     return parser
 

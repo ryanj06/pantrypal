@@ -48,6 +48,12 @@ This prints recipes ranked by how well they match your pantry, marking
 fully makeable recipes as "Ready to make!" and showing missing or
 insufficient ingredients for the rest.
 
+You can also filter suggestions by tag:
+
+```bash
+pantry suggest --tag vegetarian
+```
+
 ### Generating a shopping list
 
 Get a combined shopping list of everything missing across the top
@@ -71,10 +77,17 @@ List all known recipes:
 pantry recipes
 ```
 
-Add your own recipe (ingredients given as alternating name/quantity pairs):
+Add your own recipe (ingredients given as alternating name/quantity pairs,
+with optional tags):
 
 ```bash
-pantry add-recipe "Avocado Toast" bread 2 avocado 1 salt 1
+pantry add-recipe "Avocado Toast" bread 2 avocado 1 salt 1 --tags vegetarian quick
+```
+
+Remove a recipe by name:
+
+```bash
+pantry remove-recipe "Avocado Toast"
 ```
 
 PantryPal ships with a set of default recipes and stores your pantry and

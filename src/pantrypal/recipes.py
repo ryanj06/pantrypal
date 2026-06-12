@@ -4,12 +4,12 @@ Recipes are stored as a list of dicts with the shape:
     {
         "name": str,
         "ingredients": {ingredient_name: quantity_needed, ...},
-        "unit_notes": optional str describing units, for display only
+        "tags": list of strings, e.g. ["vegetarian", "quick"]
     }
 
 Users can extend the recipe list by editing ~/.pantrypal/recipes.json
 (created on first run from the built-in defaults below), or via the
-`pantry recipe add` command.
+`pantry add-recipe` command.
 """
 
 from __future__ import annotations
@@ -26,6 +26,7 @@ DEFAULT_RECIPES: List[Recipe] = [
     {
         "name": "Scrambled Eggs",
         "ingredients": {"eggs": 2, "butter": 1, "salt": 1},
+        "tags": ["vegetarian", "quick"],
     },
     {
         "name": "Garlic Butter Pasta",
@@ -36,6 +37,7 @@ DEFAULT_RECIPES: List[Recipe] = [
             "salt": 1,
             "parmesan": 1,
         },
+        "tags": ["vegetarian"],
     },
     {
         "name": "Vegetable Stir Fry",
@@ -47,6 +49,7 @@ DEFAULT_RECIPES: List[Recipe] = [
             "carrot": 1,
             "onion": 1,
         },
+        "tags": ["vegetarian", "vegan"],
     },
     {
         "name": "Tomato Soup",
@@ -57,14 +60,17 @@ DEFAULT_RECIPES: List[Recipe] = [
             "butter": 1,
             "salt": 1,
         },
+        "tags": ["vegetarian"],
     },
     {
         "name": "Grilled Cheese Sandwich",
         "ingredients": {"bread": 2, "cheese": 2, "butter": 1},
+        "tags": ["vegetarian", "quick"],
     },
     {
         "name": "Pancakes",
         "ingredients": {"flour": 2, "eggs": 1, "milk": 1, "butter": 1, "sugar": 1},
+        "tags": ["vegetarian"],
     },
     {
         "name": "Chicken Fried Rice",
@@ -76,10 +82,12 @@ DEFAULT_RECIPES: List[Recipe] = [
             "onion": 1,
             "garlic": 1,
         },
+        "tags": [],
     },
     {
         "name": "Caprese Salad",
         "ingredients": {"tomato": 2, "cheese": 1, "olive oil": 1, "salt": 1},
+        "tags": ["vegetarian", "quick"],
     },
 ]
 
@@ -110,3 +118,9 @@ def normalize_recipe_ingredients(recipe: Recipe) -> Dict[str, float]:
     """Return the recipe's ingredients with normalized (lowercased) names."""
     raw = recipe.get("ingredients", {})
     return {normalize_name(k): v for k, v in raw.items()}
+
+
+def recipe_has_tag(recipe: Recipe, tag: str) -> bool:
+    """Return True if the recipe is tagged with the given tag (case-insensitive)."""
+    tags = recipe.get("tags", [])
+    return tag.lower() in {str(t).lower() for t in tags}
